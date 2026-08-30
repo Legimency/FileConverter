@@ -22,6 +22,73 @@
             transform: translateX(-50%);
             width: 100%;
             text-align: center;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, -6px); }
+        }
+
+        .kamen-link {
+            color: #888;
+            text-decoration: none;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        
+        .kamen-link:hover {
+            color: #fff;
+        }
+
+        .kamen-link::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            font-style: normal;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            color: #555;
+            pointer-events: none;
+        }
+
+        .kamen-link:hover::after {
+            opacity: 1;
+            bottom: -28px;
+        }
+
+        .lang-switcher {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.2em;
+            background-color: #000000;
+            color: #ffffff;
+            padding: 10px 18px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            user-select: none;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .lang-switcher:hover { 
+            transform: translateY(-2px);
+            background-color: #050505;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
         }
 
         .btn-kamen {
@@ -41,17 +108,24 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-8 relative overflow-hidden">
 
-    <div class="header-title">
-        <h1 class="text-4xl font-black tracking-tighter italic text-white drop-shadow-2xl text-center">Kamen & COnvert</h1>
+    <div id="langSwitcher" class="lang-switcher">
+        <span>🌐︎</span>
+        <span id="langLabel">EN</span>
     </div>
 
-    <main class="w-full max-w-sm text-center mt-12 z-10">
+    <div class="header-title">
+        <h1 class="text-4xl font-black tracking-tighter italic text-white drop-shadow-2xl text-center">
+            <a href="https://legimency.github.io/kamen3D/" target="_blank" class="kamen-link" id="kamenLink" data-label="click">Kamen</a> & COnvert
+        </h1>
+    </div>
+
+    <main class="w-full max-w-md text-center mt-12 z-10">
         <!-- Шаг 1: Выбор (Главная кнопка) -->
         <div id="step1" class="step active flex-col items-center w-full">
             <button id="selectMkvBtn" class="w-full py-8 btn-kamen text-xl shadow-2xl cursor-pointer transition-all">
-                .mkv в .mp4
+                .mkv to .mp4
             </button>
-            <p class="mt-6 text-[9px] text-gray-300 uppercase tracking-[0.4em] font-bold">Выберите режим конвертации</p>
+            <p id="t-selectFormat" class="mt-6 text-[8px] sm:text-[9px] text-gray-300 uppercase tracking-[0.3em] font-bold text-center whitespace-nowrap">Select the format you want to convert to</p>
         </div>
 
         <!-- Шаг 2: Загрузка (Drag & Drop) -->
@@ -63,7 +137,7 @@
                     </svg>
                 </div>
                 <p class="font-bold text-sm uppercase tracking-[0.3em] mb-2 text-white">.mkv</p>
-                <p class="text-[9px] text-gray-300 uppercase tracking-widest text-center font-bold">перетащите файл</p>
+                <p id="t-dropHint" class="text-[9px] text-gray-300 uppercase tracking-widest text-center font-bold text-center px-4">drag & drop</p>
                 <input type="file" id="fileInput" accept=".mkv" class="hidden">
             </div>
         </div>
@@ -74,7 +148,7 @@
                 <p id="fileName" class="text-[10px] font-mono truncate text-gray-400 uppercase tracking-widest"></p>
             </div>
             <button id="convertBtn" class="w-full py-6 btn-kamen text-lg shadow-2xl cursor-pointer transition-all">
-                Конвертировать
+                convert
             </button>
         </div>
 
@@ -94,10 +168,10 @@
                 </svg>
             </div>
             <a id="downloadBtn" class="w-full py-6 btn-kamen text-lg shadow-2xl text-center block mb-6 cursor-pointer transition-all">
-                Download
+                download
             </a>
             <button id="resetBtn" class="text-[9px] font-bold text-gray-300 hover:text-white uppercase tracking-[0.4em] cursor-pointer transition-colors mx-auto">
-                загрузить новый файл
+                convert new file
             </button>
         </div>
 
@@ -105,7 +179,7 @@
     </main>
 
     <footer class="fixed bottom-10 text-center px-4 w-full opacity-80">
-        <p class="text-[8px] text-gray-300 uppercase tracking-[0.6em] font-medium italic">вся обработка происходит на клиенте</p>
+        <p id="t-footer" class="text-[8px] text-gray-300 uppercase tracking-[0.6em] font-medium italic">Conversion takes place locally</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
@@ -120,6 +194,77 @@
         });
 
         const $ = (id) => document.getElementById(id);
+        
+        let currentDownloadUrl = null;
+
+        // --- Локализация ---
+        let currentLang = 'en';
+        const i18n = {
+            en: {
+                selectMode: ".mkv to .mp4",
+                selectFormat: "Select the format you want to convert to",
+                dropHint: "drag & drop",
+                convert: "convert",
+                download: "download",
+                convertNew: "convert new file",
+                footer: "Conversion takes place locally",
+                initializing: "Initializing...",
+                loadingCore: "Loading Core...",
+                readingFile: "Reading video...",
+                converting: "Converting...",
+                finalizing: "Finalizing...",
+                done: "Done",
+                error: "ERROR",
+                selectMkvAlert: "Please select MKV file",
+                kamenHint: "click"
+            },
+            ru: {
+                selectMode: ".mkv в .mp4",
+                selectFormat: "Выберите формат в который вы хотите конвертировать",
+                dropHint: "перетащите файл",
+                convert: "конвертировать",
+                download: "скачать",
+                convertNew: "загрузить новый файл",
+                footer: "вся обработка происходит на клиенте",
+                initializing: "Инициализация...",
+                loadingCore: "Загрузка движка...",
+                readingFile: "Чтение видео...",
+                converting: "Конвертация...",
+                finalizing: "Завершение...",
+                done: "Готово",
+                error: "ОШИБКА",
+                selectMkvAlert: "Пожалуйста, выберите MKV файл",
+                kamenHint: "нажми"
+            }
+        };
+
+        function toggleLang() {
+            currentLang = currentLang === 'en' ? 'ru' : 'en';
+            updateUIStrings();
+        }
+
+        function updateUIStrings() {
+            const t = i18n[currentLang];
+            $('langLabel').innerText = currentLang.toUpperCase();
+            
+            // Статические элементы
+            $('selectMkvBtn').innerText = t.selectMode;
+            $('t-selectFormat').innerText = t.selectFormat;
+            $('t-dropHint').innerText = t.dropHint;
+            $('convertBtn').innerText = t.convert;
+            $('downloadBtn').innerText = t.download;
+            $('resetBtn').innerText = t.convertNew;
+            $('t-footer').innerText = t.footer;
+            $('kamenLink').setAttribute('data-label', t.kamenHint);
+            
+            // Динамические статусы (если они сейчас отображаются)
+            if ($('step3').classList.contains('active')) {
+                // Если мы на шаге 3 (готовность), текст кнопки уже обновлен выше
+            }
+        }
+
+        $('langSwitcher').onclick = toggleLang;
+        // ------------------
 
         function showStep(n) {
             const steps = document.querySelectorAll('.step');
@@ -135,12 +280,13 @@
         }
 
         const handleFile = (file) => {
+            const t = i18n[currentLang];
             if (file && (file.name.toLowerCase().endsWith('.mkv') || file.type === 'video/x-matroska')) {
                 window.selectedFile = file;
                 $('fileName').innerText = file.name;
                 showStep(3);
             } else {
-                alert("Пожалуйста, выберите MKV файл");
+                alert(t.selectMkvAlert);
             }
         };
 
@@ -154,22 +300,23 @@
         $('dropZone').ondrop = (e) => { e.preventDefault(); $('dropZone').classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); };
 
         $('convertBtn').onclick = async () => {
+            const t = i18n[currentLang];
             showStep(4);
-            updateProgress(5, 'Инициализация...');
+            updateProgress(5, t.initializing);
             
             try {
                 if (!ffmpeg.isLoaded()) {
-                    updateProgress(15, 'Загрузка движка...');
+                    updateProgress(15, t.loadingCore);
                     const originalSharedArrayBuffer = window.SharedArrayBuffer;
                     window.SharedArrayBuffer = undefined; 
                     await ffmpeg.load();
                     window.SharedArrayBuffer = originalSharedArrayBuffer;
                 }
 
-                updateProgress(40, 'Подготовка видео...');
+                updateProgress(40, t.readingFile);
                 ffmpeg.FS('writeFile', 'input.mkv', await fetchFile(window.selectedFile));
 
-                updateProgress(60, 'Конвертация...');
+                updateProgress(60, t.converting);
                 await ffmpeg.run(
                     '-i', 'input.mkv', 
                     '-c', 'copy', 
@@ -178,29 +325,59 @@
                     'output.mp4'
                 );
 
-                updateProgress(90, 'Финализация...');
+                updateProgress(90, t.finalizing);
                 const data = ffmpeg.FS('readFile', 'output.mp4');
-                const blob = new Blob([data.buffer], { type: 'video/mp4' });
                 
-                $('downloadBtn').href = URL.createObjectURL(blob);
+                // Очистка старого URL перед созданием нового
+                if (currentDownloadUrl) {
+                    URL.revokeObjectURL(currentDownloadUrl);
+                }
+                
+                const blob = new Blob([data.buffer], { type: 'video/mp4' });
+                currentDownloadUrl = URL.createObjectURL(blob);
+                
+                $('downloadBtn').href = currentDownloadUrl;
                 $('downloadBtn').download = window.selectedFile.name.replace(/\.mkv$/i, '.mp4');
                 
-                updateProgress(100, 'Готово');
+                updateProgress(100, t.done);
                 setTimeout(() => showStep(5), 400);
 
-                ffmpeg.FS('unlink', 'input.mkv');
-                ffmpeg.FS('unlink', 'output.mp4');
+                // Очистка виртуальной файловой системы FFmpeg
+                try {
+                    ffmpeg.FS('unlink', 'input.mkv');
+                    ffmpeg.FS('unlink', 'output.mp4');
+                } catch (e) {
+                    console.warn("Cleanup warning:", e);
+                }
             } catch (err) {
                 console.error(err);
-                $('errorMsg').innerText = "ОШИБКА: " + err.message;
+                $('errorMsg').innerText = t.error + ": " + err.message;
                 $('errorMsg').classList.remove('hidden');
                 showStep(3);
+                
+                // Очистка FS в случае ошибки
+                try {
+                    ffmpeg.FS('unlink', 'input.mkv');
+                } catch (e) {}
             }
         };
 
-        $('resetBtn').onclick = () => {
+        $('resetBtn').onclick = async () => {
             window.selectedFile = null;
-            $('fileInput').value = '';
+            $('fileInput').value = ''; // Сброс инпута в браузере
+            
+            if (currentDownloadUrl) {
+                URL.revokeObjectURL(currentDownloadUrl);
+                currentDownloadUrl = null;
+            }
+            
+            // ВАЖНО: Выгружаем FFmpeg из ОЗУ, чтобы в следующий раз он загрузился чистым
+            try {
+                await ffmpeg.exit(); 
+            } catch (e) {
+                console.log("FFmpeg уже был выгружен или не инициализирован");
+            }
+            
             showStep(1);
         };
     </script>
