@@ -3,80 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MKV to MP4 Converter</title>
+    <title>Video Converter</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        body { background-color: #ffffff; color: #1a1a1a; font-family: ui-sans-serif, system-ui, sans-serif; }
-        .step { display: none; }
-        .step.active { display: flex; }
-        .drop-zone { border: 2px dashed #e5e7eb; transition: all 0.2s ease; cursor: pointer; }
-        .drop-zone:hover, .drop-zone.dragover { border-color: #000; background-color: #f9fafb; }
-        .btn-black { background: #000; color: #fff; transition: all 0.2s ease; }
-        .btn-black:hover { background: #333; transform: translateY(-1px); }
-        .btn-black:active { transform: translateY(0); }
+        body { background-color: #ffffff; color: #000; font-family: ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+        .step { display: none; transition: opacity 0.3s ease; }
+        .step.active { display: flex; opacity: 1; }
+        .drop-zone { border: 2px dashed #eee; transition: all 0.2s ease; cursor: pointer; border-radius: 40px; }
+        .drop-zone:hover, .drop-zone.dragover { border-color: #000; background-color: #fafafa; }
+        .progress-bar { height: 100%; background: #000; width: 0%; transition: width 0.2s linear; }
+        button, .btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        button:active, .btn:active { transform: scale(0.98); }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-6 text-slate-900">
+<body class="min-h-screen flex flex-col items-center justify-center p-8">
 
-    <main class="w-full max-w-md text-center">
-        <h1 class="text-3xl font-black mb-10 tracking-tighter italic">MKV → MP4</h1>
+    <main class="w-full max-w-sm text-center">
+        <h1 class="text-4xl font-black mb-12 tracking-tighter italic uppercase">Convert</h1>
 
-        <!-- Step 1: Выбор файла -->
+        <!-- Step 1: Upload -->
         <div id="step1" class="step active flex-col items-center">
-            <div id="dropZone" class="drop-zone w-full aspect-square flex flex-col items-center justify-center rounded-[2.5rem]">
-                <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 text-gray-300">
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <div id="dropZone" class="w-full aspect-square flex flex-col items-center justify-center p-12">
+                <div class="mb-6 opacity-20">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 4v16m8-8H4" stroke-linecap="round"/>
+                    </svg>
                 </div>
-                <p class="font-bold text-gray-800 uppercase text-xs tracking-[0.2em]">Выбрать MKV</p>
+                <p class="font-bold text-sm uppercase tracking-[0.3em] mb-2">MKV File</p>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest">Drop or Click</p>
                 <input type="file" id="fileInput" accept=".mkv" class="hidden">
             </div>
         </div>
 
-        <!-- Step 2: Кнопка Старт -->
+        <!-- Step 2: Ready -->
         <div id="step2" class="step flex-col items-center">
-            <div class="mb-10 p-8 bg-gray-50 rounded-3xl w-full border border-gray-100">
-                <p id="fileName" class="text-xs font-mono break-all text-gray-400"></p>
+            <div class="w-full mb-10 py-10 px-6 bg-gray-50 rounded-[40px] border border-gray-100">
+                <p id="fileName" class="text-xs font-mono truncate text-gray-400 uppercase tracking-tighter"></p>
             </div>
-            <button id="convertBtn" class="btn-black w-full py-6 rounded-3xl font-bold text-lg uppercase tracking-widest shadow-2xl">
-                Начать конвертацию
+            <button id="convertBtn" class="w-full py-6 bg-black text-white rounded-[30px] font-black text-lg uppercase tracking-[0.2em] shadow-xl hover:bg-zinc-800">
+                Start MP4
             </button>
         </div>
 
-        <!-- Step 3: Процесс -->
+        <!-- Step 3: Progress -->
         <div id="step3" class="step flex-col items-center w-full">
-            <div class="w-full bg-gray-100 rounded-full h-2.5 mb-8 overflow-hidden">
-                <div id="progressBar" class="bg-black h-full w-0 transition-all duration-300"></div>
+            <div class="w-full bg-gray-100 rounded-full h-2 mb-8 overflow-hidden">
+                <div id="progressBar" class="progress-bar"></div>
             </div>
-            <p id="progressStatus" class="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400 italic">Подготовка...</p>
+            <p id="progressStatus" class="text-[10px] font-black tracking-[0.4em] uppercase text-gray-300 italic">Processing...</p>
         </div>
 
-        <!-- Step 4: Скачивание -->
+        <!-- Step 4: Success -->
         <div id="step4" class="step flex-col items-center">
             <div class="w-24 h-24 bg-black text-white rounded-full flex items-center justify-center mb-10 shadow-2xl">
-                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             </div>
-            <a id="downloadBtn" class="btn-black w-full py-6 rounded-3xl font-bold text-lg uppercase tracking-widest shadow-2xl inline-block text-center mb-6">
-                Скачать MP4
+            <a id="downloadBtn" class="w-full py-6 bg-black text-white rounded-[30px] font-black text-lg uppercase tracking-[0.2em] shadow-xl hover:bg-zinc-800 text-center block mb-6">
+                Download
             </a>
-            <button id="resetBtn" class="text-[10px] font-bold text-gray-400 hover:text-black uppercase tracking-[0.2em]">
-                Конвертировать другой
+            <button id="resetBtn" class="text-[10px] font-bold text-gray-300 hover:text-black uppercase tracking-[0.3em]">
+                Back to start
             </button>
         </div>
 
-        <div id="errorMsg" class="hidden mt-8 p-5 bg-red-50 text-red-600 text-[11px] rounded-2xl border border-red-100 font-mono text-left"></div>
+        <div id="errorMsg" class="hidden mt-8 p-6 bg-red-50 text-red-600 text-[10px] rounded-[30px] font-mono leading-relaxed text-left border border-red-100"></div>
     </main>
 
-    <footer class="fixed bottom-10 text-center px-4">
-        <p class="text-[9px] text-gray-300 uppercase tracking-[0.4em]">100% Local Browser Conversion</p>
+    <footer class="fixed bottom-10 text-center px-4 w-full">
+        <p class="text-[9px] text-gray-300 uppercase tracking-[0.5em] font-medium">Local Client-Side Conversion</p>
     </footer>
 
-    <!-- Используем FFmpeg 0.11.6 с ядром Single-Threaded -->
+    <!-- Логика из репозитория p2r3/convert (FFmpeg 0.11.6 + core-st) -->
     <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 
     <script>
         const { createFFmpeg, fetchFile } = FFmpeg;
         
-        // ВАЖНО: Используем core-st (Single Threaded), которое НЕ требует SharedArrayBuffer
+        // Настройка в стиле p2r3: использование стабильного однопоточного ядра
         const ffmpeg = createFFmpeg({
             log: true,
             corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js'
@@ -85,65 +90,80 @@
         const $ = (id) => document.getElementById(id);
 
         function showStep(n) {
-            ['step1', 'step2', 'step3', 'step4'].forEach((id, index) => {
-                $(id).style.display = (index + 1 === n) ? 'flex' : 'none';
+            const steps = ['step1', 'step2', 'step3', 'step4'];
+            steps.forEach((id, index) => {
+                $(id).classList.toggle('active', index + 1 === n);
             });
             $('errorMsg').classList.add('hidden');
         }
 
-        function handleFile(file) {
+        // Логика выбора файла
+        const handleFile = (file) => {
             if (file && file.name.toLowerCase().endsWith('.mkv')) {
+                window.selectedFile = file;
                 $('fileName').innerText = file.name;
                 showStep(2);
-                window.selectedFile = file;
             } else {
-                alert("Пожалуйста, выберите MKV файл");
+                showError("File must be .MKV");
             }
-        }
+        };
 
+        const showError = (msg) => {
+            $('errorMsg').innerText = msg;
+            $('errorMsg').classList.remove('hidden');
+        };
+
+        // Event Listeners
         $('dropZone').onclick = () => $('fileInput').click();
         $('fileInput').onchange = (e) => handleFile(e.target.files[0]);
+        
         $('dropZone').ondragover = (e) => { e.preventDefault(); $('dropZone').classList.add('dragover'); };
         $('dropZone').ondragleave = () => $('dropZone').classList.remove('dragover');
-        $('dropZone').ondrop = (e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); };
+        $('dropZone').ondrop = (e) => { e.preventDefault(); $('dropZone').classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); };
 
+        // Основная логика конвертации (на основе p2r3/convert)
         $('convertBtn').onclick = async () => {
             showStep(3);
             $('progressBar').style.width = '0%';
-            $('progressStatus').innerText = 'Загрузка движка...';
-
+            
             try {
                 if (!ffmpeg.isLoaded()) {
+                    $('progressStatus').innerText = 'Loading Core...';
                     await ffmpeg.load();
                 }
 
-                $('progressStatus').innerText = 'Чтение файла...';
+                $('progressStatus').innerText = 'Writing FS...';
+                // Виртуальная файловая система FFmpeg
                 ffmpeg.FS('writeFile', 'input.mkv', await fetchFile(window.selectedFile));
 
+                // Отслеживание прогресса через нативный метод ffmpeg.wasm
                 ffmpeg.setProgress(({ ratio }) => {
                     const p = Math.round(ratio * 100);
                     $('progressBar').style.width = `${p}%`;
-                    $('progressStatus').innerText = `Обработка: ${p}%`;
+                    $('progressStatus').innerText = `Processing: ${p}%`;
                 });
 
-                $('progressStatus').innerText = 'Конвертация (remuxing)...';
-                // -c copy гарантирует моментальную работу без перекодировки
+                $('progressStatus').innerText = 'Converting...';
+                // Аргументы конвертации: remuxing (copy) без субтитров (-sn)
                 await ffmpeg.run('-i', 'input.mkv', '-c', 'copy', '-sn', 'output.mp4');
 
+                // Чтение результата из FS
                 const data = ffmpeg.FS('readFile', 'output.mp4');
                 const blob = new Blob([data.buffer], { type: 'video/mp4' });
                 
-                $('downloadBtn').href = URL.createObjectURL(blob);
+                const url = URL.createObjectURL(blob);
+                $('downloadBtn').href = url;
                 $('downloadBtn').download = window.selectedFile.name.replace(/\.mkv$/i, '.mp4');
                 
                 showStep(4);
-                
+
+                // Очистка FS для освобождения памяти
                 ffmpeg.FS('unlink', 'input.mkv');
                 ffmpeg.FS('unlink', 'output.mp4');
+
             } catch (err) {
                 console.error(err);
-                $('errorMsg').innerText = "ОШИБКА: " + err.message;
-                $('errorMsg').classList.remove('hidden');
+                showError("ERROR: " + err.message);
                 showStep(2);
             }
         };
