@@ -3,137 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MKV в MP4 Конвертер</title>
+    <title>MKV to MP4 Converter</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         body { background-color: #ffffff; color: #1a1a1a; font-family: ui-sans-serif, system-ui, sans-serif; }
         .step { display: none; }
         .step.active { display: flex; }
-        .progress-bar-fill { transition: width 0.2s ease-out; }
+        .progress-bar-fill { transition: width 0.3s ease-in-out; }
         .drop-zone { border: 2px dashed #e5e7eb; transition: all 0.2s ease; }
         .drop-zone:hover, .drop-zone.dragover { border-color: #000; background-color: #f9fafb; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-6">
+<body class="min-h-screen flex flex-col items-center justify-center p-6 text-slate-900">
 
     <main class="w-full max-w-md text-center">
-        <h1 class="text-3xl font-black mb-10 tracking-tighter italic">MKV → MP4</h1>
+        <h1 class="text-3xl font-black mb-10 tracking-tighter">MKV → MP4</h1>
 
-        <!-- Блок уведомления об ошибке окружения -->
-        <div id="envWarning" class="hidden mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm text-left">
-            <strong>Внимание:</strong> Вы открыли файл напрямую. Браузер блокирует конвертацию в целях безопасности. 
-            <br><br>
-            Чтобы всё заработало:
-            <ul class="list-disc ml-4 mt-2">
-                <li>Загрузите этот файл на <strong>GitHub Pages</strong>.</li>
-                <li>Или запустите локальный сервер (например, расширение Live Server в VS Code).</li>
-            </ul>
-        </div>
-
-        <!-- Шаг 1: Загрузка -->
+        <!-- Шаг 1: Загрузить -->
         <div id="step1" class="step active flex-col items-center">
-            <div id="dropZone" class="drop-zone w-full aspect-square md:aspect-video flex flex-col items-center justify-center rounded-2xl cursor-pointer">
-                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <div id="dropZone" class="drop-zone w-full aspect-square flex flex-col items-center justify-center rounded-3xl cursor-pointer">
+                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                     <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 </div>
-                <p class="font-bold text-gray-900">Выбрать MKV файл</p>
-                <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">drag & drop</p>
+                <p class="font-bold text-gray-700">Нажмите или перетащите</p>
+                <p class="text-[10px] text-gray-400 mt-2 uppercase tracking-[0.2em]">MKV файл</p>
                 <input type="file" id="fileInput" accept=".mkv" class="hidden">
             </div>
         </div>
 
-        <!-- Шаг 2: Готовность -->
+        <!-- Шаг 2: Конвертировать -->
         <div id="step2" class="step flex-col items-center">
             <div class="mb-8 p-6 bg-gray-50 rounded-2xl w-full border border-gray-100">
-                <p id="fileName" class="text-sm font-mono truncate text-gray-500"></p>
+                <p id="fileName" class="text-xs font-mono truncate text-gray-500"></p>
             </div>
-            <button id="convertBtn" class="w-full py-5 bg-black text-white rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-2xl cursor-pointer">
-                КОНВЕРТИРОВАТЬ
+            <button id="convertBtn" class="w-full py-5 bg-black text-white rounded-2xl font-bold text-lg hover:bg-zinc-800 transition-all shadow-xl cursor-pointer">
+                Конвертировать в MP4
             </button>
         </div>
 
-        <!-- Шаг 3: Процесс -->
+        <!-- Шаг 3: Прогресс -->
         <div id="step3" class="step flex-col items-center w-full">
-            <div class="w-full bg-gray-100 rounded-full h-3 mb-6 overflow-hidden">
+            <div class="w-full bg-gray-100 rounded-full h-2 mb-6 overflow-hidden">
                 <div id="progressBar" class="progress-bar-fill bg-black h-full w-0"></div>
             </div>
-            <p id="progressStatus" class="text-sm font-bold tracking-widest uppercase text-gray-400">Инициализация...</p>
+            <p id="progressStatus" class="text-xs font-bold tracking-widest uppercase text-gray-400 italic">Инициализация...</p>
         </div>
 
-        <!-- Шаг 4: Успех -->
+        <!-- Шаг 4: Финал -->
         <div id="step4" class="step flex-col items-center">
-            <div class="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center mb-6 shadow-xl">
+            <div class="w-20 h-20 bg-zinc-900 text-white rounded-full flex items-center justify-center mb-6 shadow-2xl">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
             </div>
-            <a id="downloadBtn" class="w-full py-5 bg-black text-white rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-2xl inline-block text-center mb-4 cursor-pointer">
+            <h2 class="text-xl font-bold mb-6">Готово!</h2>
+            <a id="downloadBtn" class="w-full py-5 bg-black text-white rounded-2xl font-bold text-lg hover:bg-zinc-800 transition-all shadow-xl inline-block text-center mb-4 cursor-pointer">
                 СКАЧАТЬ MP4
             </a>
-            <button id="resetBtn" class="text-xs font-bold text-gray-400 hover:text-black transition-colors uppercase tracking-widest cursor-pointer">
-                Другой файл
+            <button id="resetBtn" class="mt-4 text-[10px] font-bold text-gray-400 hover:text-black transition-colors uppercase tracking-[0.2em] cursor-pointer">
+                Конвертировать другой
             </button>
         </div>
 
-        <div id="errorMsg" class="hidden mt-6 p-4 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-mono"></div>
+        <div id="errorMsg" class="hidden mt-6 p-4 bg-red-50 text-red-600 text-[11px] rounded-xl border border-red-100 font-mono"></div>
     </main>
 
     <footer class="fixed bottom-8 text-center px-4">
-        <p class="text-[10px] text-gray-300 uppercase tracking-[0.2em]">100% Приватно • Обработка на вашем устройстве</p>
+        <p class="text-[9px] text-gray-300 uppercase tracking-[0.3em]">Обработка происходит только в вашем браузере</p>
     </footer>
 
-    <!-- FFmpeg.wasm Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    <!-- Используем стабильную версию 0.11.6, которая работает без SharedArrayBuffer -->
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 
     <script>
-        const { FFmpeg } = FFmpegWASM;
-        const { fetchFile, toBlobURL } = FFmpegUtil;
+        const { createFFmpeg, fetchFile } = FFmpeg;
+        
+        // Настройка FFmpeg: log: true позволяет видеть процесс, 
+        // а corePath указывает на стабильное ядро
+        const ffmpeg = createFFmpeg({ 
+            log: true,
+            corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
+        });
 
-        let ffmpeg = null;
         let selectedFile = null;
 
-        const steps = { 1: $('step1'), 2: $('step2'), 3: $('step3'), 4: $('step4') };
         function $(id) { return document.getElementById(id); }
 
         function showStep(n) {
-            Object.values(steps).forEach(s => s.classList.remove('active'));
-            steps[n].classList.add('active');
-        }
-
-        async function loadFFmpeg() {
-            if (ffmpeg && ffmpeg.loaded) return;
-            
-            try {
-                ffmpeg = new FFmpeg();
-                
-                // Логирование для отладки прямо в интерфейс
-                ffmpeg.on('log', ({ message }) => {
-                    console.log(message);
-                    if (message.includes('Error')) {
-                        $('progressStatus').innerText = "Ошибка потока...";
-                    }
-                });
-
-                ffmpeg.on('progress', ({ progress }) => {
-                    const p = Math.min(Math.max(Math.round(progress * 100), 0), 100);
-                    $('progressBar').style.width = `${p}%`;
-                    $('progressStatus').innerText = `Обработка: ${p}%`;
-                });
-
-                // Используем CDN UNPKG для стабильности
-                const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
-                
-                // ВАЖНО: Не указываем workerURL для принудительного однопоточного режима
-                // Это позволяет работать на GitHub Pages без специальных заголовков
-                await ffmpeg.load({
-                    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-                    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
-                });
-                
-                ffmpeg.loaded = true;
-            } catch (e) {
-                console.error("FFmpeg Load Error:", e);
-                throw new Error("Ошибка загрузки движка. Попробуйте обновить страницу.");
-            }
+            ['step1', 'step2', 'step3', 'step4'].forEach((id, index) => {
+                $(id).style.display = (index + 1 === n) ? 'flex' : 'none';
+            });
+            $('errorMsg').classList.add('hidden');
         }
 
         // Выбор файла
@@ -143,31 +101,44 @@
                 $('fileName').innerText = file.name;
                 showStep(2);
             } else {
-                alert("Пожалуйста, выберите файл .mkv");
+                alert("Пожалуйста, выберите MKV файл.");
             }
         }
 
         $('dropZone').onclick = () => $('fileInput').click();
         $('fileInput').onchange = (e) => handleFile(e.target.files[0]);
+        
         $('dropZone').ondragover = (e) => { e.preventDefault(); $('dropZone').classList.add('dragover'); };
         $('dropZone').ondragleave = () => $('dropZone').classList.remove('dragover');
-        $('dropZone').ondrop = (e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); };
+        $('dropZone').ondrop = (e) => { e.preventDefault(); $('dropZone').classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); };
 
         // Конвертация
         $('convertBtn').onclick = async () => {
             showStep(3);
+            $('progressBar').style.width = '0%';
+            $('progressStatus').innerText = 'Загрузка движка...';
+
             try {
-                await loadFFmpeg();
-                
-                const inName = 'input.mkv';
-                const outName = 'output.mp4';
+                if (!ffmpeg.isLoaded()) {
+                    await ffmpeg.load();
+                }
 
-                await ffmpeg.writeFile(inName, await fetchFile(selectedFile));
-                
-                // Команда remuxing: копируем потоки, убираем субтитры (они часто ломают MP4 контейнер)
-                await ffmpeg.exec(['-i', inName, '-c', 'copy', '-sn', outName]);
+                $('progressStatus').innerText = 'Чтение видео...';
+                ffmpeg.FS('writeFile', 'input.mkv', await fetchFile(selectedFile));
 
-                const data = await ffmpeg.readFile(outName);
+                // Отслеживание прогресса
+                ffmpeg.setProgress(({ ratio }) => {
+                    const p = Math.round(ratio * 100);
+                    $('progressBar').style.width = `${p}%`;
+                    $('progressStatus').innerText = `Конвертация: ${p}%`;
+                });
+
+                $('progressStatus').innerText = 'Запуск (remuxing)...';
+                // -c copy гарантирует быструю работу без перекодирования
+                // -sn убирает субтитры, которые часто несовместимы с MP4 контейнером
+                await ffmpeg.run('-i', 'input.mkv', '-c', 'copy', '-sn', 'output.mp4');
+
+                const data = ffmpeg.FS('readFile', 'output.mp4');
                 const blob = new Blob([data.buffer], { type: 'video/mp4' });
                 
                 $('downloadBtn').href = URL.createObjectURL(blob);
@@ -175,11 +146,12 @@
                 
                 showStep(4);
                 
-                // Чистим память
-                await ffmpeg.deleteFile(inName);
-                await ffmpeg.deleteFile(outName);
+                // Очистка памяти внутри FS
+                ffmpeg.FS('unlink', 'input.mkv');
+                ffmpeg.FS('unlink', 'output.mp4');
             } catch (err) {
-                $('errorMsg').innerText = err.message;
+                console.error(err);
+                $('errorMsg').innerText = "ОШИБКА: " + err.message;
                 $('errorMsg').classList.remove('hidden');
                 showStep(2);
             }
