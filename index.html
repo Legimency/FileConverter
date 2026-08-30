@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <!-- Этот скрипт необходим для GitHub Pages для активации SharedArrayBuffer -->
-    <script src="https://cdn.jsdelivr.net/gh/gzuidhof/coi-serviceworker@latest/coi-serviceworker.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MKV в MP4 Конвертер</title>
@@ -93,43 +91,48 @@
         let ffmpeg = null;
         let selectedFile = null;
 
-        // UI Элементы
         const steps = { 1: $('step1'), 2: $('step2'), 3: $('step3'), 4: $('step4') };
         function $(id) { return document.getElementById(id); }
-
-        // Проверка окружения
-        if (window.location.protocol === 'file:') {
-            $('envWarning').classList.remove('hidden');
-        }
 
         function showStep(n) {
             Object.values(steps).forEach(s => s.classList.remove('active'));
             steps[n].classList.add('active');
-            $('errorMsg').classList.add('hidden');
         }
 
         async function loadFFmpeg() {
-            if (ffmpeg) return;
+            if (ffmpeg && ffmpeg.loaded) return;
+            
             try {
                 ffmpeg = new FFmpeg();
                 
-                ffmpeg.on('progress', ({ progress }) => {
-                    const p = Math.round(progress * 100);
-                    $('progressBar').style.width = `${p}%`;
-                    $('progressStatus').innerText = `Конвертация: ${p}%`;
+                // Логирование для отладки прямо в интерфейс
+                ffmpeg.on('log', ({ message }) => {
+                    console.log(message);
+                    if (message.includes('Error')) {
+                        $('progressStatus').innerText = "Ошибка потока...";
+                    }
                 });
 
-                const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';
+                ffmpeg.on('progress', ({ progress }) => {
+                    const p = Math.min(Math.max(Math.round(progress * 100), 0), 100);
+                    $('progressBar').style.width = `${p}%`;
+                    $('progressStatus').innerText = `Обработка: ${p}%`;
+                });
+
+                // Используем CDN UNPKG для стабильности
+                const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
                 
-                // Для GitHub Pages (с coi-serviceworker) используем многопоточную версию
+                // ВАЖНО: Не указываем workerURL для принудительного однопоточного режима
+                // Это позволяет работать на GitHub Pages без специальных заголовков
                 await ffmpeg.load({
                     coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-                    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-                    workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript')
+                    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
                 });
+                
+                ffmpeg.loaded = true;
             } catch (e) {
-                console.error(e);
-                throw new Error("Не удалось запустить конвертер. Проверьте соединение или попробуйте в другом браузере.");
+                console.error("FFmpeg Load Error:", e);
+                throw new Error("Ошибка загрузки движка. Попробуйте обновить страницу.");
             }
         }
 
