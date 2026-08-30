@@ -42,7 +42,7 @@
 <body class="min-h-screen flex flex-col items-center justify-center p-8 relative overflow-hidden">
 
     <div class="header-title">
-        <h1 class="text-4xl font-black tracking-tighter italic text-white drop-shadow-2xl text-center">Kamen and COnvert</h1>
+        <h1 class="text-4xl font-black tracking-tighter italic text-white drop-shadow-2xl text-center">Kamen & COnvert</h1>
     </div>
 
     <main class="w-full max-w-sm text-center mt-12 z-10">
@@ -51,7 +51,7 @@
             <button id="selectMkvBtn" class="w-full py-8 btn-kamen text-xl shadow-2xl cursor-pointer transition-all">
                 .mkv в .mp4
             </button>
-            <p class="mt-6 text-[9px] text-gray-500 uppercase tracking-[0.4em] opacity-60 font-bold">Выберите режим конвертации</p>
+            <p class="mt-6 text-[9px] text-gray-300 uppercase tracking-[0.4em] font-bold">Выберите режим конвертации</p>
         </div>
 
         <!-- Шаг 2: Загрузка (Drag & Drop) -->
@@ -62,8 +62,8 @@
                         <path d="M12 4v16m8-8H4" stroke-linecap="round"/>
                     </svg>
                 </div>
-                <p class="font-bold text-sm uppercase tracking-[0.3em] mb-2 text-white">MKV File</p>
-                <p class="text-[9px] text-gray-500 uppercase tracking-widest text-center opacity-60">Перетащите или нажмите</p>
+                <p class="font-bold text-sm uppercase tracking-[0.3em] mb-2 text-white">.mkv</p>
+                <p class="text-[9px] text-gray-300 uppercase tracking-widest text-center font-bold">перетащите файл</p>
                 <input type="file" id="fileInput" accept=".mkv" class="hidden">
             </div>
         </div>
@@ -96,16 +96,16 @@
             <a id="downloadBtn" class="w-full py-6 btn-kamen text-lg shadow-2xl text-center block mb-6 cursor-pointer transition-all">
                 Download
             </a>
-            <button id="resetBtn" class="text-[9px] font-bold text-gray-600 hover:text-white uppercase tracking-[0.4em] cursor-pointer transition-colors mx-auto">
-                Back to start
+            <button id="resetBtn" class="text-[9px] font-bold text-gray-300 hover:text-white uppercase tracking-[0.4em] cursor-pointer transition-colors mx-auto">
+                загрузить новый файл
             </button>
         </div>
 
         <div id="errorMsg" class="hidden mt-8 p-6 bg-red-500/10 text-red-400 text-[10px] rounded-[30px] font-mono leading-relaxed text-left border border-red-500/20"></div>
     </main>
 
-    <footer class="fixed bottom-10 text-center px-4 w-full opacity-40">
-        <p class="text-[8px] text-gray-400 uppercase tracking-[0.6em] font-medium italic">100% Local & Secure Conversion</p>
+    <footer class="fixed bottom-10 text-center px-4 w-full opacity-80">
+        <p class="text-[8px] text-gray-300 uppercase tracking-[0.6em] font-medium italic">вся обработка происходит на клиенте</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
