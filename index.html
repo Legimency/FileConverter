@@ -18,7 +18,7 @@
     <main class="w-full max-w-md text-center">
         <h1 class="text-3xl font-black mb-10 tracking-tighter italic">MKV → MP4</h1>
 
-        <!-- Step 1 -->
+        <!-- Шаг 1: Загрузка -->
         <div id="step1" class="step active flex-col items-center">
             <div id="dropZone" class="drop-zone w-full aspect-square flex flex-col items-center justify-center rounded-3xl">
                 <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-400">
@@ -29,7 +29,7 @@
             </div>
         </div>
 
-        <!-- Step 2 -->
+        <!-- Шаг 2: Готов -->
         <div id="step2" class="step flex-col items-center">
             <div class="mb-8 p-6 bg-gray-50 rounded-2xl w-full border border-gray-100">
                 <p id="fileName" class="text-xs font-mono truncate text-gray-400"></p>
@@ -39,15 +39,15 @@
             </button>
         </div>
 
-        <!-- Step 3 -->
+        <!-- Шаг 3: Прогресс -->
         <div id="step3" class="step flex-col items-center w-full">
-            <div class="w-full bg-gray-100 rounded-full h-2 mb-6 overflow-hidden text-left">
+            <div class="w-full bg-gray-100 rounded-full h-2 mb-6 overflow-hidden">
                 <div id="progressBar" class="bg-black h-full w-0 transition-all duration-300"></div>
             </div>
             <p id="progressStatus" class="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 italic">Инициализация...</p>
         </div>
 
-        <!-- Step 4 -->
+        <!-- Шаг 4: Финал -->
         <div id="step4" class="step flex-col items-center">
             <div class="w-20 h-20 bg-zinc-900 text-white rounded-full flex items-center justify-center mb-8 shadow-2xl">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
@@ -67,15 +67,21 @@
         <p class="text-[9px] text-gray-300 uppercase tracking-[0.3em]">Обработка на вашем устройстве</p>
     </footer>
 
-    <!-- FFmpeg Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    <!-- Используем 0.10.1 - она самая стабильная для Single Thread без CORS проблем -->
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.1/dist/ffmpeg.min.js"></script>
 
     <script>
-        const { FFmpeg } = FFmpegWASM;
-        const { fetchFile, toBlobURL } = FFmpegUtil;
+        const { createFFmpeg, fetchFile } = FFmpeg;
+        
+        // ВАЖНО: Мы создаем FFmpeg сразу, но загружаем ядро только при нажатии кнопки.
+        // Это позволяет избежать ошибок при загрузке страницы.
+        const ffmpeg = createFFmpeg({
+            log: true,
+            // Этот параметр принудительно отключает многопоточность для совместимости с GH Pages
+            mainName: 'main',
+            corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js',
+        });
 
-        let ffmpeg = null;
         let selectedFile = null;
 
         function $(id) { return document.getElementById(id); }
@@ -87,66 +93,22 @@
             $('errorMsg').classList.add('hidden');
         }
 
-        // ВАЖНО: Хак для создания воркера из текста скрипта
-        async function getWorkerBlobURL(url) {
-            const response = await fetch(url);
-            const code = await response.text();
-            const blob = new Blob([code], { type: 'text/javascript' });
-            return URL.createObjectURL(blob);
-        }
-
-        async function loadFFmpeg() {
-            if (ffmpeg && ffmpeg.loaded) return;
-
-            // Принудительно отключаем SharedArrayBuffer для режима Single Thread
-            const originalSAB = window.SharedArrayBuffer;
-            window.SharedArrayBuffer = undefined;
-
-            try {
-                ffmpeg = new FFmpeg();
-                
-                ffmpeg.on('progress', ({ progress }) => {
-                    const p = Math.round(progress * 100);
-                    $('progressBar').style.width = `${p}%`;
-                    $('progressStatus').innerText = `Прогресс: ${p}%`;
-                });
-
-                const coreBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';
-                const ffmpegBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd';
-
-                // Загружаем вспомогательный воркер как локальный Blob, чтобы избежать SecurityError
-                const workerLoadURL = await getWorkerBlobURL(`${ffmpegBase}/814.ffmpeg.js`);
-
-                await ffmpeg.load({
-                    coreURL: await toBlobURL(`${coreBase}/ffmpeg-core.js`, 'text/javascript'),
-                    wasmURL: await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm'),
-                    workerLoadURL: workerLoadURL
-                });
-
-                ffmpeg.loaded = true;
-            } catch (err) {
-                console.error(err);
-                throw new Error("Не удалось загрузить FFmpeg: " + err.message);
-            } finally {
-                window.SharedArrayBuffer = originalSAB;
-            }
-        }
-
         function handleFile(file) {
             if (file && file.name.toLowerCase().endsWith('.mkv')) {
                 selectedFile = file;
                 $('fileName').innerText = file.name;
                 showStep(2);
             } else {
-                alert("Выберите файл MKV");
+                alert("Пожалуйста, выберите MKV файл.");
             }
         }
 
         $('dropZone').onclick = () => $('fileInput').click();
         $('fileInput').onchange = (e) => handleFile(e.target.files[0]);
+        
         $('dropZone').ondragover = (e) => { e.preventDefault(); $('dropZone').classList.add('dragover'); };
         $('dropZone').ondragleave = () => $('dropZone').classList.remove('dragover');
-        $('dropZone').ondrop = (e) => { e.preventDefault(); $('dropZone').classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); };
+        $('dropZone').ondrop = (e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); };
 
         $('convertBtn').onclick = async () => {
             showStep(3);
@@ -154,16 +116,25 @@
             $('progressStatus').innerText = 'Загрузка движка...';
 
             try {
-                await loadFFmpeg();
+                if (!ffmpeg.isLoaded()) {
+                    await ffmpeg.load();
+                }
 
                 $('progressStatus').innerText = 'Чтение файла...';
-                await ffmpeg.writeFile('input.mkv', await fetchFile(selectedFile));
+                ffmpeg.FS('writeFile', 'input.mkv', await fetchFile(selectedFile));
 
-                $('progressStatus').innerText = 'Конвертация...';
-                // -c copy для скорости, -sn для удаления проблемных субтитров
-                await ffmpeg.exec(['-i', 'input.mkv', '-c', 'copy', '-sn', 'output.mp4']);
+                ffmpeg.setProgress(({ ratio }) => {
+                    const p = Math.round(ratio * 100);
+                    $('progressBar').style.width = `${p}%`;
+                    $('progressStatus').innerText = `Обработка: ${p}%`;
+                });
 
-                const data = await ffmpeg.readFile('output.mp4');
+                $('progressStatus').innerText = 'Конвертация (remuxing)...';
+                // Команда для быстрого копирования без перекодирования
+                // -sn убирает субтитры для стабильности MP4
+                await ffmpeg.run('-i', 'input.mkv', '-c', 'copy', '-sn', 'output.mp4');
+
+                const data = ffmpeg.FS('readFile', 'output.mp4');
                 const blob = new Blob([data.buffer], { type: 'video/mp4' });
                 
                 $('downloadBtn').href = URL.createObjectURL(blob);
@@ -171,11 +142,12 @@
                 
                 showStep(4);
                 
-                await ffmpeg.deleteFile('input.mkv');
-                await ffmpeg.deleteFile('output.mp4');
+                // Очистка FS
+                ffmpeg.FS('unlink', 'input.mkv');
+                ffmpeg.FS('unlink', 'output.mp4');
             } catch (err) {
                 console.error(err);
-                $('errorMsg').innerText = "ОШИБКА: " + err.message;
+                $('errorMsg').innerText = "ОШИБКА: " + err.message + "\n\nПопробуйте использовать Chrome или Edge, если ошибка повторяется.";
                 $('errorMsg').classList.remove('hidden');
                 showStep(2);
             }
