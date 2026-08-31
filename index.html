@@ -6,14 +6,43 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗂️</text></svg>">
     <title>Video Converter | MKV to MP4</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #1a1a1a; color: #ffffff; font-family: ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+        body { 
+            background-color: #1a1a1a; 
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
+            color: #d1d1d1; 
+            font-family: 'Inter', sans-serif; 
+            -webkit-font-smoothing: antialiased; 
+            overflow-x: hidden;
+        }
         .step { display: none; }
         .step.active { display: flex; }
-        .drop-zone { border: 2px dashed rgba(255,255,255,0.08); transition: all 0.2s ease; cursor: pointer; border-radius: 40px; background-color: rgba(255,255,255,0.02); }
+        
+        .stone-texture {
+            background-color: #2a2a2a;
+            background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
+            box-shadow: 
+                inset 2px 2px 5px rgba(255,255,255,0.05),
+                inset -2px -2px 5px rgba(0,0,0,0.5),
+                8px 8px 20px rgba(0,0,0,0.4);
+            border: 1px solid #333;
+        }
+
+        .drop-zone { 
+            border: 2px dashed rgba(255,255,255,0.08); 
+            transition: all 0.2s ease; 
+            cursor: pointer; 
+            border-radius: 40px; 
+            background-color: rgba(255,255,255,0.02); 
+        }
         .drop-zone:hover, .drop-zone.dragover { border-color: #fff; background-color: rgba(255,255,255,0.05); }
         .progress-bar { height: 100%; background: #fff; width: 0%; transition: width 0.4s ease; }
-        button, .btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        button, .btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         button:active { transform: scale(0.97); }
         
         .header-title {
@@ -25,6 +54,25 @@
             text-align: center;
             animation: float 4s ease-in-out infinite;
         }
+
+        .carved-text {
+            font-family: 'Cinzel', serif;
+            text-shadow: 1px 1px 1px rgba(255,255,255,0.1), -1px -1px 1px rgba(0,0,0,0.8);
+            letter-spacing: 0.05em;
+        }
+
+        /* Russian Font Scaling & Family */
+        body.lang-ru .translatable-font,
+        body.lang-ru .step .carved-text,
+        body.lang-ru footer .translatable-font {
+            font-family: 'Cormorant Garamond', serif !important;
+            font-size: calc(100% + 2px);
+        }
+        
+        /* Ensure specific small labels also grow */
+        body.lang-ru .text-\[9px\] { font-size: 11px; }
+        body.lang-ru .text-\[8px\] { font-size: 10px; }
+        body.lang-ru .text-\[10px\] { font-size: 12px; }
 
         @keyframes float {
             0%, 100% { transform: translate(-50%, 0); }
@@ -74,17 +122,18 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 900;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.1em;
             background-color: #000000;
             color: #ffffff;
-            padding: 14px 26px;
+            padding: 12px 24px;
             border-radius: 25px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
             user-select: none;
             border: 1px solid rgba(255,255,255,0.08);
+            font-family: 'Cinzel', serif;
         }
         
         @media (max-width: 640px) {
@@ -104,17 +153,33 @@
         }
 
         .btn-kamen {
-            background-color: #ffffff;
-            color: #1a1a1a;
+            background-color: #333;
+            color: #ffffff;
             border-radius: 30px;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.2em;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            box-shadow: 
+                inset 1px 1px 0px rgba(255,255,255,0.1),
+                0 20px 40px rgba(0,0,0,0.4);
+            border: 1px solid #444;
+            font-family: 'Cinzel', serif;
         }
         .btn-kamen:hover {
-            background-color: #f0f0f0;
             transform: translateY(-2px);
+            background: #3a3a3a;
+            box-shadow: 
+                0 0 15px rgba(255, 255, 255, 0.1),
+                inset 1px 1px 0px rgba(255,255,255,0.15),
+                6px 6px 15px rgba(0,0,0,0.6);
+            border-color: #555;
+        }
+
+        #selectMkvBtn {
+            font-size: 22px;
+        }
+        body.lang-ru #selectMkvBtn {
+            font-size: 24px;
         }
     </style>
 </head>
@@ -126,30 +191,30 @@
     </div>
 
     <div class="header-title">
-        <h1 class="text-4xl font-black tracking-tighter italic text-white drop-shadow-2xl text-center">
-            <a href="https://legimency.github.io/kamen3D/" target="_blank" class="kamen-link" id="kamenLink" data-label="click">Kamen</a> & COnvert
+        <h1 class="carved-text text-4xl font-black tracking-tighter italic text-white drop-shadow-2xl text-center">
+            <a href="https://legimency.github.io/kamen3D/" target="_blank" class="kamen-link carved-text" id="kamenLink" data-label="click">Kamen</a> & COnvert
         </h1>
     </div>
 
     <main class="w-full max-w-md text-center mt-12 z-10">
         <!-- Шаг 1: Выбор (Главная кнопка) -->
         <div id="step1" class="step active flex-col items-center w-full">
-            <button id="selectMkvBtn" class="w-full py-8 btn-kamen text-xl shadow-2xl cursor-pointer transition-all">
+            <button id="selectMkvBtn" class="w-full py-8 btn-kamen text-xl shadow-2xl cursor-pointer transition-all carved-text">
                 .mkv to .mp4
             </button>
-            <p id="t-selectFormat" class="mt-6 text-[8px] sm:text-[9px] text-gray-300 uppercase tracking-[0.3em] font-bold text-center whitespace-nowrap">Select the format you want to convert to</p>
+            <p id="t-selectFormat" class="mt-6 text-[8px] sm:text-[9px] text-gray-300 uppercase tracking-[0.3em] font-bold text-center whitespace-nowrap translatable-font">Select the format you want to convert to</p>
         </div>
 
         <!-- Шаг 2: Загрузка (Drag & Drop) -->
         <div id="step2" class="step flex-col items-center w-full">
-            <div id="dropZone" class="w-full aspect-square flex flex-col items-center justify-center p-12 drop-zone shadow-2xl">
+            <div id="dropZone" class="w-full aspect-square flex flex-col items-center justify-center p-12 drop-zone shadow-2xl stone-texture">
                 <div class="mb-6 opacity-30 text-white">
                     <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
                         <path d="M12 4v16m8-8H4" stroke-linecap="round"/>
                     </svg>
                 </div>
-                <p class="font-bold text-sm uppercase tracking-[0.3em] mb-2 text-white">.mkv</p>
-                <p id="t-dropHint" class="text-[9px] text-gray-300 uppercase tracking-widest text-center font-bold text-center px-4">drag & drop</p>
+                <p class="font-bold text-sm uppercase tracking-[0.3em] mb-2 text-white carved-text">.mkv</p>
+                <p id="t-dropHint" class="text-[9px] text-gray-300 uppercase tracking-widest text-center font-bold text-center px-4 translatable-font">drag & drop</p>
                 <input type="file" id="fileInput" accept=".mkv" class="hidden">
             </div>
         </div>
@@ -159,7 +224,7 @@
             <div class="w-full mb-8 py-10 px-6 bg-white/5 rounded-[40px] border border-white/5 overflow-hidden shadow-inner text-center">
                 <p id="fileName" class="text-[10px] font-mono truncate text-gray-400 uppercase tracking-widest"></p>
             </div>
-            <button id="convertBtn" class="w-full py-6 btn-kamen text-lg shadow-2xl cursor-pointer transition-all">
+            <button id="convertBtn" class="w-full py-6 btn-kamen text-lg shadow-2xl cursor-pointer transition-all carved-text">
                 convert
             </button>
         </div>
@@ -169,7 +234,7 @@
             <div class="w-full bg-white/5 rounded-full h-1.5 mb-8 overflow-hidden">
                 <div id="progressBar" class="progress-bar shadow-[0_0_15px_rgba(255,255,255,0.5)]"></div>
             </div>
-            <p id="progressStatus" class="text-[9px] font-black tracking-[0.5em] uppercase text-gray-500 italic animate-pulse">Processing...</p>
+            <p id="progressStatus" class="text-[9px] font-black tracking-[0.5em] uppercase text-gray-500 italic animate-pulse translatable-font">Processing...</p>
         </div>
 
         <!-- Шаг 5: Успех -->
@@ -179,10 +244,10 @@
                     <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
-            <a id="downloadBtn" class="w-full py-6 btn-kamen text-lg shadow-2xl text-center block mb-6 cursor-pointer transition-all">
+            <a id="downloadBtn" class="w-full py-6 btn-kamen text-lg shadow-2xl text-center block mb-6 cursor-pointer transition-all carved-text">
                 download
             </a>
-            <button id="resetBtn" class="text-[9px] font-bold text-gray-300 hover:text-white uppercase tracking-[0.4em] cursor-pointer transition-colors mx-auto">
+            <button id="resetBtn" class="text-[9px] font-bold text-gray-300 hover:text-white uppercase tracking-[0.4em] cursor-pointer transition-colors mx-auto translatable-font">
                 convert new file
             </button>
         </div>
@@ -214,7 +279,7 @@
         const i18n = {
             en: {
                 selectMode: ".mkv to .mp4",
-                selectFormat: "Select the format you want to convert to",
+                selectFormat: "Select the format for conversion",
                 dropHint: "drag & drop",
                 convert: "convert",
                 download: "download",
@@ -232,7 +297,7 @@
             },
             ru: {
                 selectMode: ".mkv в .mp4",
-                selectFormat: "Выберите формат в который вы хотите конвертировать",
+                selectFormat: "Выберите формат для конвертации",
                 dropHint: "перетащите файл",
                 convert: "конвертировать",
                 download: "скачать",
@@ -268,10 +333,12 @@
             $('resetBtn').innerText = t.convertNew;
             $('t-footer').innerText = t.footer;
             $('kamenLink').setAttribute('data-label', t.kamenHint);
-            
-            // Динамические статусы (если они сейчас отображаются)
-            if ($('step3').classList.contains('active')) {
-                // Если мы на шаге 3 (готовность), текст кнопки уже обновлен выше
+
+            // Переключение класса для CSS-масштабирования
+            if (currentLang === 'ru') {
+                document.body.classList.add('lang-ru');
+            } else {
+                document.body.classList.remove('lang-ru');
             }
         }
 
